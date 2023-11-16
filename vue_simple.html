@@ -1,0 +1,78 @@
+<!-- FILEPATH: /C:/Users/EPSI/Downloads/vue_simple.html -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://unpkg.com/vue@3"></script>
+    <meta charset="utf-8">
+    <title>Vue simple</title>
+  </head>
+  <body>
+    <style>
+    </style>
+    <div id="main">
+        <h1>Parking Nantes</h1>
+        <form>
+            <div class="input-group mb-3 ms-5" style="width: 50%; margin: auto; margin-bottom: 20px; margin-top: 20px; ">
+                <input type="text" class="form-control form-controle-sm" placeholder="Nom du parking"    v-model="search">
+                <button type="submit" class="btn btn-primary" @click.prevent="fetchData()">Rechercher</button>
+            </div>
+
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Disponibilité</th>
+                    <th scope="col">Google map</th>
+                </tr>
+                <tr v-for="record in parking">
+                    <td>{{record.grp_nom}}</td>
+                    <td :class="record.grp_disponible > 50 ? 'text-bg-success' : record.grp_disponible > 10 ? 'text-bg-warning' : 'text-bg-danger'">{{record.grp_disponible}}</td>
+                    <td><a v-if="record.url" :href="record.url" target="_blank">Google map</a></td>
+                </tr>
+            </thead>
+            </table>
+    </div>
+    <script>
+			Vue.createApp({
+                data() {
+                    return {
+                        parking: [],
+                        search: "",
+                        apiURL: "https://data.nantesmetropole.fr/api/explore/v2.1/catalog/datasets/244400404_parkings-publics-nantes-disponibilites/records?limit=99",
+                    };
+                },
+                created: function () {
+                    this.fetchData();
+                },
+                methods: {
+                    fetchData: async function() {
+                        try {
+                            const response = await axios.get(this.apiURL);
+                            console.log(response.data);
+                            let result = response.data.results.filter(element => {
+                                return element.grp_nom.toLowerCase().includes(this.search.toLowerCase());
+                            });
+                            result.forEach(element => {
+                                element.url = element.location ? this.getUrlMap(element.location) : "";
+                            });
+                            console.log(result);
+                            this.parking = result;            
+                        }
+                        catch (error) {
+                            console.log("appel api en erreur")
+                            console.log(error);
+                        }
+                    },
+                    getUrlMap: function(location) {
+                        return "https://www.google.com/maps/search/?api=1&query=" + location.lat + "," + location.lon;
+                    }
+                }
+            }).mount('#main');
+
+    </script>
+  </body>
+</html>
