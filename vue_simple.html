@@ -4,6 +4,7 @@
 <html>
   <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha256-YMa+wAM6QkVyz999odX7lPRxkoYAan8suedu4k2Zur8=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script src="https://unpkg.com/vue@3"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -25,16 +26,15 @@
   
     </style>
     <div id="main">
+        <div class="container">
         <div>
         <h1>Parking Nantes</h1>
         <form>
-            <div class="input-group mb-3 ms-5" style="width: 50%; margin: auto; margin-bottom: 20px; margin-top: 20px; ">
-                <input type="text" class="form-control form-controle-sm" placeholder="Nom du parking"    v-model="search">
-                <button type="submit" class="btn btn-primary" @click.prevent="fetchData()">Rechercher</button>
+            <div class="input-group mb-3" style="width: 50%; margin: auto; margin-bottom: 20px; margin-top: 20px; ">
+                <input type="text" class="form-control form-controle-sm" placeholder="Nom du parking" v-model="search" @input="fetchData()">
             </div>
 
         </form>
-        <div class="container">
         <table class="table">
             <thead>
                 <tr>
@@ -45,30 +45,50 @@
                 <tr v-for="record in parking">
                     <td>{{record.grp_nom}}</td>
                     <td :class="record.grp_disponible > 50 ? 'text-bg-success' : record.grp_disponible > 10 ? 'text-bg-warning' : 'text-bg-danger'">{{record.grp_disponible}}</td>
-                    <td><a v-if="record.url" :href="record.url" target="_blank">Google map</a></td>
+                    <td><button type="button" class="btn btn-primary" @click="getUrlMap(record.location, record.grp_nom)"  data-bs-toggle="modal" data-bs-target="#modalMap">Voir</button></td>
                 </tr>
             </thead>
             </table>
         </div>
-    </div>
-<div id="map" class="map hidden">
-</div>
+    </div>     
+
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMap">
+        Launch demo modal
+      </button>
+      
+      <!-- Modal -->
+      <div class="modal fade" id="modalMap" tabindex="-1" aria-labelledby="modalMapLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="modalMapLabel">{{arret}}</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe
+                width="100%"
+                height="450"
+                frameborder="0"
+                marginheight="0"
+                marginwidth="0"
+                :src="src">
+                </iframe>
+            </div>
+          </div>
+        </div>
+      </div>      
 </div>
     
     <script>
-            let map = L.map('map').setView([47.2136949, -1.5393237], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', ).addTo(map);
-            //ajouter un marker pour chaque parking
-            //pour chaque parking, ajouter un marker
-            
-
 			Vue.createApp({
                 data() {
                     return {
                         parking: [],
+                        src: "",
+                        arret: "",
                         menu: 'map',
                         search: "",
-                        apiURL: "https://data.nantesmetropole.fr/api/explore/v2.1/catalog/datasets/244400404_parkings-publics-nantes-disponibilites/records?limit=99",
+                        apiURL: "https://data.nantesmetropole.fr/api/explore/v2.1/catalog/datasets/244400404_parkings-publics-nantes-disponibilites/records?limit=-1",
                     };
                 },
                 created: function () {
@@ -76,35 +96,27 @@
                 },
                 methods: {
                     fetchData: async function() {
+                        console.log("fetchData");
                         try {
                             const response = await axios.get(this.apiURL);
                             console.log(response.data);
                             let result = response.data.results.filter(element => {
                                 return element.grp_nom.toLowerCase().includes(this.search.toLowerCase());
                             });
-                            result.forEach(element => {
-                                element.url = element.location ? this.getUrlMap(element.location) : "";
-                                //ajouter un marker pour chaque parking
-                                if (element.location) {
-                                L.marker([element.location.lat, element.location.lon]).addTo(map)
-                                    .bindPopup(element.grp_nom + " : " + element.grp_disponible + " places disponibles")
-                                    .openPopup();
-                                }
-                            });
                             console.log(result);
-                            this.parking = result;            
+                            this.parking = result;        
                         }
                         catch (error) {
                             console.log("appel api en erreur")
                             console.log(error);
                         }
                     },
-                    getUrlMap: function(location) {
-                        return "https://www.google.com/maps/search/?api=1&query=" + location.lat + "," + location.lon;
+                    getUrlMap: function(location, name) {
+                        this.src = `https://maps.google.com/maps?q=${location.lat},${location.lon}&hl=fr&z=14&output=embed`;
+                        this.arret = name;
                     }
                 }
             }).mount('#main');
-
     </script>
   </body>
 </html>
