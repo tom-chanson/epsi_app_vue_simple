@@ -52,31 +52,26 @@
         </div>
     </div>     
 
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMap">
-        Launch demo modal
-      </button>
-      
-      <!-- Modal -->
-      <div class="modal fade" id="modalMap" tabindex="-1" aria-labelledby="modalMapLabel" aria-hidden="true">
+    <div class="modal fade" id="modalMap" tabindex="-1" aria-labelledby="modalMapLabel" aria-hidden="true">
         <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="modalMapLabel">{{arret}}</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalMapLabel">{{arret}}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe
+                    width="100%"
+                    height="450"
+                    frameborder="0"
+                    marginheight="0"
+                    marginwidth="0"
+                    :src="src">
+                    </iframe>
+                </div>
             </div>
-            <div class="modal-body">
-                <iframe
-                width="100%"
-                height="450"
-                frameborder="0"
-                marginheight="0"
-                marginwidth="0"
-                :src="src">
-                </iframe>
-            </div>
-          </div>
         </div>
-      </div>      
+    </div>      
 </div>
     
     <script>
@@ -86,7 +81,6 @@
                         parking: [],
                         src: "",
                         arret: "",
-                        menu: 'map',
                         search: "",
                         apiURL: "https://data.nantesmetropole.fr/api/explore/v2.1/catalog/datasets/244400404_parkings-publics-nantes-disponibilites/records?limit=-1",
                     };
